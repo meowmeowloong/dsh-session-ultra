@@ -12,11 +12,26 @@ test("delete navigation: deleting the current session from header calls uiWorksp
   });
   await app.flush();
 
+  // The title-bar cluster is opt-in (featureStore.titlebar, default off).
+  app.exports.featureStore.setTitlebar(true);
   await app.mountHeader("s1");
-  const deleteBtn = nodes(app.headerTree, n => n.props?.["aria-label"] === "删除会话")[0];
-  assert.ok(deleteBtn, "Header delete button must exist");
+  // With the title bar enabled there is still NO standalone red delete
+  // button: delete is reachable only through the compact ⋯ overflow menu
+  // item (sm-headerMenuItemDanger).
+  assert.equal(
+    nodes(app.headerTree, n => (n.props?.className || "").includes("sm-headerBtnDanger")).length,
+    0,
+    "Header must not render a standalone delete button"
+  );
+  const moreBtn = nodes(app.headerTree, n => (n.props?.className || "").includes("sm-headerCompactMenuBtn"))[0];
+  assert.ok(moreBtn, "Compact ⋯ menu button must exist");
+  moreBtn.props.onClick({ stopPropagation() {} });
+  await app.flush();
 
-  deleteBtn.props.onClick({ currentTarget: {} });
+  const deleteItem = nodes(app.headerTree, n => (n.props?.className || "").includes("sm-headerMenuItemDanger") && text(n).includes("删除会话"))[0];
+  assert.ok(deleteItem, "Delete menu item must exist in the compact ⋯ menu");
+
+  deleteItem.props.onClick({ currentTarget: {} });
   await app.flush();
 
   const confirmDialog = nodes(app.headerTree, n => n.props?.title === "删除会话")[0];
@@ -34,6 +49,7 @@ test("delete navigation: deleting the current session from header calls uiWorksp
   assert.ok(app.refreshCalls.includes("sessions"), "ctx.sessions.refresh must be called");
   assert.ok(app.refreshCalls.includes("workspaces"), "ctx.workspaces.refresh must be called");
 
+  app.exports.featureStore.reset();
   app.dispose();
 });
 
@@ -198,6 +214,8 @@ test("delete navigation: archive session navigates to new session view", async (
   });
   await app.flush();
 
+  // The title-bar cluster is opt-in (featureStore.titlebar, default off).
+  app.exports.featureStore.setTitlebar(true);
   await app.mountHeader("s1");
   const archiveBtn = nodes(app.headerTree, n => n.props?.["aria-label"] === "归档")[0];
   assert.ok(archiveBtn, "Header archive button must exist");
@@ -210,5 +228,6 @@ test("delete navigation: archive session navigates to new session view", async (
     "Archiving current session must trigger uiWorkspace clear / archive"
   );
 
+  app.exports.featureStore.reset();
   app.dispose();
 });

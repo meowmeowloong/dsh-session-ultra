@@ -49,12 +49,14 @@ test("bulk: row checkbox label is gated on selectedIds.size === 0 && !selectMode
   );
 });
 
-test("bulk: BulkActionBar appears when selections exist or select-mode is on", () => {
+test("bulk: BulkActionBar appears when selections exist or select-mode is on (and only when batch is enabled)", () => {
   // The bar shows as soon as the panel header toggle is on,
-  // not only after the first checkbox is ticked.
+  // not only after the first checkbox is ticked -- but never without a
+  // selection basis (selectedIds non-empty or selectModeEnabled) and never
+  // when the batch feature is switched off in the feature store.
   assert.match(
     SRC,
-    /\(selectedIds\.size > 0 \|\| selectModeEnabled\) \? h\(BulkActionBar/
+    /\(selectedIds\.size > 0 \|\| selectModeEnabled\) && featurePrefs\.features\.batch !== false \? h\(BulkActionBar/
   );
 });
 

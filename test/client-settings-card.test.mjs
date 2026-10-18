@@ -252,6 +252,68 @@ test("Settings Card: registry selector renders options and persists choice", () 
   harness.dispose();
 });
 
+test("Settings Card: renders the feature-toggle and sidebar ⋯ menu-item sections, title bar switch starts OFF", () => {
+  const harness = mountClient();
+  const { SessionManagerSettingsCard, featureStore, SmSwitch } = harness.exports;
+
+  const host = harness.mountComponent(SessionManagerSettingsCard, { t: harness.t });
+  const cardText = text(host.tree);
+
+  // The two new switch sections must be rendered with their headings.
+  assert.ok(cardText.includes(harness.t("settings.featureSection")), "功能开关 section must appear");
+  assert.ok(cardText.includes(harness.t("settings.menuSection")), "侧边栏 ⋯ 菜单项 section must appear");
+
+  const findSwitch = (label) => nodes(host.tree, n => n.type === SmSwitch && n.props?.ariaLabel === label)[0];
+
+  // The title-bar entry switch exists and starts OFF (the title bar is
+  // opt-in; delete then lives only in the ⋯ overflow menu).
+  const titlebarSwitch = findSwitch(harness.t("settings.titlebarEntry"));
+  assert.ok(titlebarSwitch, "title bar switch must exist");
+  assert.equal(titlebarSwitch.props.checked, false, "title bar switch must start OFF");
+  assert.equal(featureStore.isTitlebarEnabled(), false);
+  // It renders as a real switch button carrying the label and OFF state.
+  const sw = harness.mountComponent(titlebarSwitch.type, titlebarSwitch.props);
+  assert.equal(sw.tree.props.role, "switch");
+  assert.equal(sw.tree.props["aria-checked"], false);
+  assert.equal(sw.tree.props["aria-label"], harness.t("settings.titlebarEntry"));
+  sw.dispose();
+
+  // Flipping the switch drives featureStore (and re-renders reflect it).
+  titlebarSwitch.props.onChange(true);
+  assert.equal(featureStore.isTitlebarEnabled(), true);
+  assert.equal(JSON.parse(harness.localStorage.getItem("dsh-session-ultra-features-v1")).titlebar, true);
+  host.render();
+  assert.equal(findSwitch(harness.t("settings.titlebarEntry")).props.checked, true);
+
+  // One switch per feature id in the feature section, one per row-menu item
+  // in the menu section (labels overlap between sections, so scope the search).
+  const sections = nodes(host.tree, n => n.props?.className === "sm-settingsSection");
+  const featureSection = sections.find(s => text(s).includes(harness.t("settings.featureSection")));
+  const menuSection = sections.find(s => text(s).includes(harness.t("settings.menuSection")));
+  assert.ok(featureSection, "功能开关 section block must exist");
+  assert.ok(menuSection, "侧边栏 ⋯ 菜单项 section block must exist");
+  for (const id of ["archive", "tags", "notes", "favorite", "reviewLater", "priority", "move", "migrate", "delete", "copyId", "batch", "workspaceMgmt"]) {
+    const key = harness.t("feature." + id);
+    assert.equal(
+      nodes(featureSection, n => n.type === SmSwitch && n.props?.ariaLabel === key).length,
+      1,
+      `feature switch for ${id} (${key}) must render exactly once`
+    );
+  }
+  for (const key of ["feature.copyId", "marks.header.edit", "row.migrate", "row.move", "row.delete"]) {
+    const label = harness.t(key);
+    assert.equal(
+      nodes(menuSection, n => n.type === SmSwitch && n.props?.ariaLabel === label).length,
+      1,
+      `row-menu switch for ${label} must render exactly once`
+    );
+  }
+
+  featureStore.reset();
+  host.dispose();
+  harness.dispose();
+});
+
 test("Settings Card: registered in plugins.bundle.config slot for DSH desktop compatibility", () => {
   const harness = mountClient();
   const reg = harness.registered;

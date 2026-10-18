@@ -9,12 +9,17 @@ const sessions = [
 ];
 async function setup(t, options = {}) {
   const app = mountClient({ sessions, current: "a", workspaces: [], ...options });
-  t.after(() => app.dispose()); await app.flush(); return app;
+  t.after(() => { app.exports.featureStore.reset(); app.dispose(); }); await app.flush(); return app;
 }
+// The title-bar cluster is opt-in (featureStore.titlebar, default off):
+// enable it before mountHeader() so the header renders, and reset the store
+// in the test cleanup (it persists to the harness localStorage).
+const enableTitlebar = app => app.exports.featureStore.setTitlebar(true);
 const edit = app => app.clickLabel("编辑标签、备注和优先级: Alpha");
 
 test("favorite/review shortcuts synchronize between panel and header and only patch the chosen field", async t => {
   const app = await setup(t, { sessionAnnotations: { a: { note: "keep note", priority: 2 } } });
+  enableTitlebar(app);
   await app.mountHeader("a");
   await app.clickLabel("收藏会话: Alpha");
   assert.equal(app.annotations.a.favorite, true);
@@ -44,7 +49,7 @@ test("editor saves favorite/review, normalized tags, multiline notes and priorit
 });
 
 test("header opens the same editor and saved notes/tags immediately appear in the manager", async t => {
-  const app = await setup(t); await app.mountHeader("a");
+  const app = await setup(t); enableTitlebar(app); await app.mountHeader("a");
   await app.clickHeader("编辑标签、备注和优先级: Alpha");
   await app.change("标签", "header tag"); await app.change("备注", "saved via header");
   await app.change("优先级", "5"); await app.click("保存标记");
@@ -147,6 +152,7 @@ test("pending quick actions disable both surfaces and duplicate requests are pre
   let release;
   const blocked = new Promise(resolve => { release = resolve; });
   const app = await setup(t, { saveAnnotations: async () => { await blocked; return { ok: true, result: { annotation: { favorite: true, reviewLater: false, tags: [], note: "", priority: null, revision: 1 } } }; } });
+  enableTitlebar(app);
   await app.mountHeader("a"); await app.clickLabel("收藏会话: Alpha");
   assert.equal(app.headerControl("收藏会话: Alpha").props.disabled, true);
   assert.equal(app.control("收藏会话: Alpha").props.disabled, true);

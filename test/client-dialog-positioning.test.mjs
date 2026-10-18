@@ -359,6 +359,8 @@ test("secondary dialog: title-bar MoveDialog renders dropdown defaulting to curr
     current: "s1"
   });
   await app.flush();
+  // The title-bar cluster is opt-in (featureStore.titlebar, default off).
+  app.exports.featureStore.setTitlebar(true);
   await app.mountHeader("s1");
 
   const headerMoveBtn = nodes(app.headerTree, n => n.type === "button" && text(n).includes("移动至工作区"))[0];
@@ -374,6 +376,7 @@ test("secondary dialog: title-bar MoveDialog renders dropdown defaulting to curr
   assert.ok(select, "Title-bar MoveDialog must render select dropdown");
   assert.equal(select.props.value, "ws1", "Title-bar MoveDialog dropdown must default to session's current workspace");
 
+  app.exports.featureStore.reset();
   app.dispose();
 });
 
@@ -401,6 +404,8 @@ test("title-bar buttons do not disappear or throw when SessionManagerPanel is op
     querySelector: customQuerySelector
   });
   await app.flush();
+  // The title-bar cluster is opt-in (featureStore.titlebar, default off).
+  app.exports.featureStore.setTitlebar(true);
   await app.mountHeader("s1");
 
   // Clicking move button in header while panel is open must not throw
@@ -414,17 +419,30 @@ test("title-bar buttons do not disappear or throw when SessionManagerPanel is op
   const titleMoveDialogEl = nodes(app.headerTree, n => n.type?.name === "MoveDialog" && n.props?.open)[0];
   assert.ok(titleMoveDialogEl, "MoveDialog must open safely without crashing");
 
-  // Clicking delete button in header while panel is open must not throw
-  const headerDelBtn = nodes(app.headerTree, n => n.type === "button" && text(n).includes("删除会话"))[0];
-  assert.ok(headerDelBtn, "Title bar delete button must exist");
+  // With the title bar enabled there is still NO standalone delete button;
+  // delete lives only in the compact ⋯ overflow menu. Clicking that menu
+  // item while the panel is open must not throw.
+  assert.equal(
+    nodes(app.headerTree, n => n.type === "button" && (n.props?.className || "").includes("sm-headerBtnDanger")).length,
+    0,
+    "Title bar must not render a standalone delete button"
+  );
+  const moreBtn = nodes(app.headerTree, n => (n.props?.className || "").includes("sm-headerCompactMenuBtn"))[0];
+  assert.ok(moreBtn, "Compact ⋯ menu button must exist");
+  moreBtn.props.onClick({ stopPropagation() {} });
+  await app.flush();
+
+  const headerDelItem = nodes(app.headerTree, n => n.type === "button" && (n.props?.className || "").includes("sm-headerMenuItemDanger") && text(n).includes("删除会话"))[0];
+  assert.ok(headerDelItem, "Delete menu item must exist in the compact ⋯ menu");
   assert.doesNotThrow(() => {
-    headerDelBtn.props.onClick();
+    headerDelItem.props.onClick({ currentTarget: {} });
   });
   await app.flush();
 
   const titleDelDialogEl = nodes(app.headerTree, n => n.type?.name === "ConfirmDialog" && n.props?.open)[0];
   assert.ok(titleDelDialogEl, "ConfirmDialog must open safely without crashing");
 
+  app.exports.featureStore.reset();
   app.dispose();
 });
 
@@ -470,6 +488,8 @@ test("unified first line text formatting across single and bulk dialogs", async 
   assert.equal(nodes(host.tree, n => n.props?.className === "sm-moveLabel").length, 0, "MigratePresetDialog should not render extra sm-moveLabel above select");
 
   // 4. Single Annotation dialog first line
+  // The title-bar cluster is opt-in (featureStore.titlebar, default off).
+  app.exports.featureStore.setTitlebar(true);
   await app.mountHeader("s1");
   const markBtn = nodes(app.headerTree, n => n.type === "button" && text(n).includes("标签/备注"))[0];
   markBtn.props.onClick();
@@ -525,6 +545,7 @@ test("unified first line text formatting across single and bulk dialogs", async 
   summary = nodes(host.tree, n => n.props?.className === "sm-bulkDialogSummary")[0];
   assert.equal(text(summary), "「2条会话」：添加标签");
 
+  app.exports.featureStore.reset();
   app.dispose();
 });
 
@@ -533,6 +554,8 @@ test("Escape key closes secondary dialogs in LIFO order (topmost/newest first)",
     sessions: SESSIONS,
     workspaces: WORKSPACES,
   });
+  // The title-bar cluster is opt-in (featureStore.titlebar, default off).
+  app.exports.featureStore.setTitlebar(true);
   await app.mountHeader("s1");
 
   // 1. Open MoveDialog from header
@@ -572,5 +595,6 @@ test("Escape key closes secondary dialogs in LIFO order (topmost/newest first)",
   assert.equal(nodes(app.headerTree, n => n.type?.name === "MoveDialog" && n.props?.open).length, 0, "MoveDialog should now be closed on second Escape");
 
   moveHost.dispose();
+  app.exports.featureStore.reset();
   app.dispose();
 });

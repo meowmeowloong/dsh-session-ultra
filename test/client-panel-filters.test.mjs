@@ -579,10 +579,11 @@ test("panel: bulk-mode toggle is ADJACENT to 全选当前筛选 (no spacer betwe
   const hasInlineBulkActionBar = toolbarChildren.some(c => c && typeof c.type === "function" && c.type.name === "BulkActionBar");
   assert.ok(!hasInlineBulkActionBar, "BulkActionBar must not be inlined in the toolbar (no duplicate)");
 
-  // 5. The standalone BulkActionBar block is rendered above rowsList when bulk mode is active.
+  // 5. The standalone BulkActionBar block is rendered above rowsList when bulk
+  //    mode is active -- and only when the batch feature gate is on.
   await app.clickLabel("进入批量管理模式");
-  assert.match(SRC, /\(selectedIds\.size > 0 \|\| selectModeEnabled\)\s*\?\s*h\(BulkActionBar,/,
-    "BulkActionBar must still render as a standalone row above rowsList");
+  assert.match(SRC, /\(selectedIds\.size > 0 \|\| selectModeEnabled\) && featurePrefs\.features\.batch !== false \? h\(BulkActionBar,/,
+    "BulkActionBar must still render as a standalone row above rowsList, gated on selection/select-mode and the batch feature");
 });
 
 

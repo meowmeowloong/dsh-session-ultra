@@ -89,7 +89,10 @@ const sessions = [
 
 async function setupHeader(t, options = {}) {
   const app = mountClient({ sessions, current: "s1", workspaces: [{ id: "w1", name: "Dev Workspace" }], ...options });
-  t.after(() => app.dispose());
+  t.after(() => { app.exports.featureStore.reset(); app.dispose(); });
+  // The title-bar cluster is opt-in (featureStore.titlebar, default off):
+  // enable it before mounting the header, and reset the store in cleanup.
+  app.exports.featureStore.setTitlebar(true);
   await app.flush();
   await app.mountHeader("s1");
   return app;
@@ -126,13 +129,19 @@ test("header-responsive: renders primary, secondary, and compact menu elements",
   const moveLabel = nodes(moveBtn, n => n.props?.className === "sm-headerBtnLabel")[0];
   assert.equal(text(moveLabel), "移动至工作区");
 
-  const deleteBtn = nodes(secondaryContainer, n => n.props?.["aria-label"] === "删除会话")[0];
-  assert.ok(deleteBtn, "delete button must be inside sm-headerSecondaryActions");
-  assert.ok(deleteBtn.props.className.includes("sm-headerBtnDanger"), "delete button must be styled with sm-headerBtnDanger");
-  const deleteIcon = nodes(deleteBtn, n => n.props?.className === "sm-headerBtnIcon")[0];
-  assert.equal(text(deleteIcon), "🗑");
-  const deleteLabel = nodes(deleteBtn, n => n.props?.className === "sm-headerBtnLabel")[0];
-  assert.equal(text(deleteLabel), "删除会话");
+  // With the title bar enabled the standalone red delete button is still
+  // GONE: the destructive delete never gets its own header button and is
+  // reachable only through the compact ⋯ overflow menu item.
+  assert.equal(
+    nodes(header, n => (n.props?.className || "").includes("sm-headerBtnDanger")).length,
+    0,
+    "no standalone sm-headerBtnDanger delete button may render in the header"
+  );
+  assert.equal(
+    nodes(secondaryContainer, n => n.props?.["aria-label"] === "删除会话").length,
+    0,
+    "delete must not sit in sm-headerSecondaryActions any more"
+  );
 
   // Compact menu button exists
   const compactMenu = nodes(header, n => n.props?.className === "sm-headerCompactMenu")[0];
@@ -140,6 +149,22 @@ test("header-responsive: renders primary, secondary, and compact menu elements",
   const moreBtn = nodes(compactMenu, n => n.props?.className?.includes("sm-headerCompactMenuBtn"))[0];
   assert.ok(moreBtn, "more button (⋯) must exist");
   assert.equal(moreBtn.props["aria-expanded"], false);
+
+  // Delete is reachable through the ⋯ overflow menu's danger item.
+  moreBtn.props.onClick({ stopPropagation() {} });
+  await app.flush();
+  const menu = nodes(app.headerTree, n => n.props?.className === "sm-headerMenu")[0];
+  assert.ok(menu, "compact menu must open");
+  const deleteItem = nodes(menu, n => (n.props?.className || "").includes("sm-headerMenuItemDanger") && text(n).includes("删除会话"))[0];
+  assert.ok(deleteItem, "delete must be reachable via the compact menu danger item");
+  assert.ok((deleteItem.props.className || "").includes("sm-headerMenuItem"), "delete item must use the sm-headerMenuItem(Danger) classes");
+  const deleteIcon = nodes(deleteItem, n => n.props?.className === "sm-headerBtnIcon")[0];
+  assert.equal(text(deleteIcon), "🗑");
+  // Close the menu again so the header ends in its resting state.
+  const closeMoreBtn = nodes(app.headerTree, n => n.props?.className?.includes("sm-headerCompactMenuBtn"))[0];
+  closeMoreBtn.props.onClick({ stopPropagation() {} });
+  await app.flush();
+  assert.equal(nodes(app.headerTree, n => n.props?.className === "sm-headerMenu").length, 0, "compact menu must close again");
 });
 
 test("header-responsive: compact menu opens and displays secondary action items", async (t) => {
