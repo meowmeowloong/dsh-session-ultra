@@ -102,7 +102,7 @@ DSH 会话与工作区管理——工作区：归档与显示。会话：跨工�
 
 ### 3.1 从插件安装
 
-在 DSH 的 **插件** 中 **添加插件**，来源选 GitHub：`github:zf-666888/dsh-session-ultra`（或本地路径 / npm 若已发布）。装完**完全重启 DSH**——客户端代码是启动时快照的，只刷新页面不够。
+在 DSH 的 **插件** 中 **添加插件**，来源选 GitHub：`github:meowmeowloong/dsh-session-ultra`（或本地路径 / npm 若已发布）。装完**完全重启 DSH**——客户端代码是启动时快照的，只刷新页面不够。
 
 > 从上游 `dsh-session-manager` 迁移：先安装本插件并重启，确认功能正常后，在插件页停用 `dsh-session-manager`（与 `dsh-session-id-for-desktop`，若装过）。标注数据共享，无需迁移；回滚时反过来停用本插件、重启用上游即可。
 
@@ -121,7 +121,7 @@ dsh plugin --profile web add npm:dsh-session-ultra
 从 GitHub 安装：
 
 ```powershell
-dsh plugin --profile web add github:zf-666888/dsh-session-ultra
+dsh plugin --profile web add github:meowmeowloong/dsh-session-ultra
 ```
 
 安装后重启 DSH Web。若浏览器仍加载旧的客户端代码，可使用 `Ctrl+Shift+R` 强制刷新。

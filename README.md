@@ -104,7 +104,7 @@ Open the `dsh-session-ultra` config card on DSH's **Plugins** page (or the plugi
 
 ### 3.1 Install from Plugins
 
-In DSH, open **Plugins**, choose **Add plugin**, pick GitHub as the source, and install `github:zf-666888/dsh-session-ultra` (or a local path / npm if it has been published). **Fully restart DSH** afterwards — client code is snapshotted at startup, so refreshing the page is not enough.
+In DSH, open **Plugins**, choose **Add plugin**, pick GitHub as the source, and install `github:meowmeowloong/dsh-session-ultra` (or a local path / npm if it has been published). **Fully restart DSH** afterwards — client code is snapshotted at startup, so refreshing the page is not enough.
 
 > Migrating from upstream `dsh-session-manager`: install this plugin and restart first, then disable `dsh-session-manager` (and `dsh-session-id-for-desktop`, if you have it) on the plugin page. Annotations are shared, so there is nothing to migrate; to roll back, do the reverse — disable this plugin and re-enable upstream.
 
@@ -123,7 +123,7 @@ dsh plugin --profile web add npm:dsh-session-ultra
 Install from GitHub:
 
 ```powershell
-dsh plugin --profile web add github:zf-666888/dsh-session-ultra
+dsh plugin --profile web add github:meowmeowloong/dsh-session-ultra
 ```
 
 Restart DSH Web after installation. If the browser still loads an older client bundle, use `Ctrl+Shift+R` to force-refresh the page.

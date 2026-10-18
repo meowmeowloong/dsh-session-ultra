@@ -24,12 +24,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zf-666888/dsh-session-ultra.git"
+    "url": "git+https://github.com/meowmeowloong/dsh-session-ultra.git"
   },
   "bugs": {
-    "url": "https://github.com/zf-666888/dsh-session-ultra/issues"
+    "url": "https://github.com/meowmeowloong/dsh-session-ultra/issues"
   },
-  "homepage": "https://github.com/zf-666888/dsh-session-ultra",
+  "homepage": "https://github.com/meowmeowloong/dsh-session-ultra",
   "type": "module",
   "main": "./lib/index.js",
   "exports": {
