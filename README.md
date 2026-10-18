@@ -1,16 +1,21 @@
-# dsh-session-manager — session and workspace manager for DeepSeek Harness
+# dsh-session-ultra — DeepSeek Harness session & workspace manager (a lean fork of dsh-session-manager)
 
 English | [中文](README.zh.md)
 
-[![npm version](https://img.shields.io/npm/v/dsh-session-manager)](https://www.npmjs.com/package/dsh-session-manager)
-[![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-upstream-1082ff)](https://github.com/deepseek-ai/deepseek-harness)
-[![GitHub](https://img.shields.io/badge/GitHub-repository-blue)](https://github.com/hkkz9522/dsh-session-manager)
-[![CI](https://github.com/hkkz9522/dsh-session-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/hkkz9522/dsh-session-manager/actions/workflows/ci.yml)
-[![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
+> **This repository is a fork of [hkkz9522/dsh-session-manager](https://github.com/hkkz9522/dsh-session-manager) (MIT)** — same feature set, rearranged interactions. If you want the original with everything on display out of the box, use upstream; if you only want a few features such as "preset migration", would rather the plugin stay out of the conversation title bar, and want the features tucked into the native sidebar menu, use this fork.
+>
+> | Aspect | upstream dsh-session-manager | dsh-session-ultra |
+> | --- | --- | --- |
+> | Conversation title bar entry | Persistent button cluster, including a big red **Delete session** | **Fully off by default**; opt-in via settings; delete is never a standalone prominent button — it only appears in the ⋯ overflow menu |
+> | Sidebar session-row ⋯ menu | Not integrated | **Native slot integration**: Copy session ID / Tags · Notes / Migrate preset / Move to workspace / Delete session, each individually optional |
+> | Feature display | Everything on display | **Every feature individually toggleable** (12 switches); disabled features disappear from every surface |
+> | Self-update target | npm `dsh-session-manager` | npm `dsh-session-ultra` (upstream releases never overwrite this fork) |
+>
+> The data directory (`$DSH_HOME/dsh-session-manager/`, holding annotations and workspace archive state) and the preference keys are **shared** with upstream, so switching over loses nothing and rollback is always possible.
 
 ## 0 Overview
 
-DeepSeek Harness session and workspace manager —— Workspaces: archive and visibility. Sessions: move, migrate presets, delete, favorite, review later, prioritize, tag, and annotate. Batch operations.
+DeepSeek Harness session and workspace manager —— Workspaces: archive and visibility. Sessions: move, migrate presets, delete, favorite, review later, prioritize, tag, and annotate. Batch operations. **In this fork, each of the above can be individually enabled or disabled in the plugin settings.**
 
 Verified with the official DSH Desktop client; see [5 Compatibility](#5-compatibility) for the current verification scope. Both environments share the same plugin Host/client functionality; environment-specific installation notes are documented below.
 
@@ -45,6 +50,7 @@ Verified with the official DSH Desktop client; see [5 Compatibility](#5-compatib
 
 ### 1.4 Plugin updates and settings
 
+- **Feature toggles (new in this fork)**: The settings card's "Feature Toggles" section offers 12 feature switches (archive / tags / notes / favorite / review-later / priority / move to workspace / migrate preset / delete session / copy session ID / batch operations / workspace management) plus a "Conversation title bar" master switch (default OFF). A disabled feature disappears everywhere — panel row buttons, bulk actions, dialog fields and menu items all follow along. The "Sidebar ⋯ Menu Items" section further chooses which actions join the native session row's ⋯ menu. Changes apply instantly and persist, and a one-click "Reset to defaults" is provided.
 - **Self-update check**: An **npm icon button** (Check for updates) in the session manager panel header checks for updates and displays a notification dot when a new version is available. Click to open the update dialog with current and latest versions, and one-click update via the DSH Plugin Manager with support for both HMR and non-HMR environments, persistent status tracking, automatic rollback on failure, and restart/refresh prompts.
 - **Settings Card**: Registered under DSH Settings (`settings.plugin.item`). Displays current version, latest version, inline check/update buttons, an auto-check toggle, and GitHub repository link.
 - **Install Source (Registry)**: Select between **npm official registry** (`registry.npmjs.org`, default) and **China mainland mirror** (`registry.npmmirror.com`) in the Settings Card. Check for updates and download packages directly from the selected registry.
@@ -64,9 +70,23 @@ Verified with the official DSH Desktop client; see [5 Compatibility](#5-compatib
 
 ## 2 UI entry points
 
-### 2.1 Title bar
+### 2.1 Title bar (disabled by default)
 
-The right side of the title area exposes actions for the **current session**: **Archive / Unarchive**, **Tags / Notes**, **Move to workspace**, **Delete session**.
+**This fork never occupies the conversation title bar unless you enable it in settings.** Turn on the "Conversation title bar" switch in the settings card and the right side of the title bar will expose actions for the **current session**: **Archive / Unarchive**, **Favorite**, **Review later**, **Tags / Notes**, **Move to workspace** (each following its own feature toggle). **Delete session never gets a standalone button** — even with the title bar entry enabled, delete only appears in the ⋯ overflow menu, always last.
+
+### 2.5 Sidebar ⋯ menu (new in this fork)
+
+The **⋯** menu on the right of a session row is an official DSH slot (`sidebar.workspaces.session.menu.item`, shared with DSH's own pin / rename / fork / archive actions); this fork embeds the following actions by order value, each individually switchable in the settings card's "Sidebar ⋯ Menu Items" section:
+
+| Menu item | order | Opens |
+| --- | --- | --- |
+| Copy session ID | 150 | Writes straight to the clipboard |
+| Tags / Notes | 250 | Annotation and notes editor |
+| Migrate preset | 350 | Migrate Agent preset dialog |
+| Move to workspace | 375 | Move to workspace dialog |
+| Delete session (red) | 500 | Confirmation dialog (with subagent check), deliberately last |
+
+The row menu unmounts on pointer-leave, so a persistent dialog host (`shell.overlay`) takes over and opens the same dialogs the manager panel uses, anchored near the menu.
 
 ### 2.2 Sessions and workspaces management entry and interface
 
@@ -78,13 +98,15 @@ The **Batch process** button in the session manager panel header is the entry po
 
 ### 2.4 Settings Card
 
-Navigate to DSH Settings -> Plugins -> Session Manager to inspect versions, switch between npm official and China mainland mirror registries, toggle auto-update checks, or trigger updates.
+Open the `dsh-session-ultra` config card on DSH's **Plugins** page (or the plugin page in DSH Settings) to manage **feature toggles** and **sidebar ⋯ menu items**, inspect version info, switch between the npm official registry and the China mainland mirror, toggle auto-update checks, or trigger updates manually.
 
 ## 3 Installation
 
 ### 3.1 Install from Plugins
 
-In DSH, open **Plugins**, add a plugin, search for `dsh-session-manager`, and install it. This method is supported by both the official Web UI and Desktop app.
+In DSH, open **Plugins**, choose **Add plugin**, pick GitHub as the source, and install `github:zf-666888/dsh-session-ultra` (or a local path / npm if it has been published). **Fully restart DSH** afterwards — client code is snapshotted at startup, so refreshing the page is not enough.
+
+> Migrating from upstream `dsh-session-manager`: install this plugin and restart first, then disable `dsh-session-manager` (and `dsh-session-id-for-desktop`, if you have it) on the plugin page. Annotations are shared, so there is nothing to migrate; to roll back, do the reverse — disable this plugin and re-enable upstream.
 
 ### 3.2 Install from Third-Party Plugin Markets
 
@@ -95,13 +117,13 @@ This plugin is listed in [dsh-market](https://github.com/dsh-market/dsh-market) 
 Install from npm:
 
 ```powershell
-dsh plugin --profile web add npm:dsh-session-manager
+dsh plugin --profile web add npm:dsh-session-ultra
 ```
 
 Install from GitHub:
 
 ```powershell
-dsh plugin --profile web add github:hkkz9522/dsh-session-manager
+dsh plugin --profile web add github:zf-666888/dsh-session-ultra
 ```
 
 Restart DSH Web after installation. If the browser still loads an older client bundle, use `Ctrl+Shift+R` to force-refresh the page.
@@ -145,9 +167,10 @@ The table below lists verified version combinations between DeepSeek Harness (DS
 
 > **Verification note**: From version 0.6.3 onwards, this plugin is verified with the official DSH Desktop client only (the Web UI shares the same Host/client codebase but is no longer covered by the verification matrix).
 
-| DeepSeek Harness (DSH) | dsh-session-manager | Verified Environment |
+| DeepSeek Harness (DSH) | Plugin version | Verified Environment |
 | :--- | :--- | :--- |
-| **v0.2.1-rc.2** | `0.7.3`, `0.7.2` | Desktop |
+| **v0.2.1-rc.2** | `dsh-session-ultra 0.8.0` | Desktop (sidebar ⋯ menu & feature toggles verified) |
+| **v0.2.1-rc.2** | `dsh-session-manager 0.7.3`, `0.7.2` | Desktop |
 | **v0.2.0-rc.2** | `0.7.1`, `0.7.0`, `0.6.4`, `0.6.3`, `0.6.2`, `0.5.4` | Desktop |
 | **v0.1.7-rc.2** | `0.5.3` | Desktop / Web UI |
 | **v0.1.7-rc.1** | `0.5.2` | Desktop / Web UI |

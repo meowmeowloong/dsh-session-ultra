@@ -1,16 +1,21 @@
-# dsh-session-manager — DeepSeek Harness 会话与工作区管理器
+# dsh-session-ultra — DeepSeek Harness 会话与工作区管理器（dsh-session-manager 精简分支）
 
 [English](README.md) | 中文
 
-[![npm version](https://img.shields.io/npm/v/dsh-session-manager)](https://www.npmjs.com/package/dsh-session-manager)
-[![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-宿主-1082ff)](https://github.com/deepseek-ai/deepseek-harness)
-[![GitHub](https://img.shields.io/badge/GitHub-仓库-blue)](https://github.com/hkkz9522/dsh-session-manager)
-[![CI](https://github.com/hkkz9522/dsh-session-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/hkkz9522/dsh-session-manager/actions/workflows/ci.yml)
-[![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
+> **本仓库是 [hkkz9522/dsh-session-manager](https://github.com/hkkz9522/dsh-session-manager)（MIT）的分支**，功能同源，交互重排。如果你想要开箱全量展示的原版，请用上游；如果你只想要"预设迁移"这类少数功能、不希望插件占用对话标题栏、并把功能收进原生侧边栏菜单，用本分支。
+>
+> | 与上游的差异 | 上游 dsh-session-manager | 本分支 dsh-session-ultra |
+> | --- | --- | --- |
+> | 对话标题栏入口 | 常驻按钮簇，含大红色 **删除会话** | **默认完全关闭**，设置里可选开启；删除永不做成独立醒目按钮，只出现在 ⋯ 溢出菜单 |
+> | 侧边栏会话行 ⋯ 菜单 | 不集成 | **原生插槽集成**：复制会话 ID / 标签·备注 / 迁移预设 / 移动至工作区 / 删除会话，逐项可选 |
+> | 功能展示 | 全量展示 | **每个功能可单独开关**（12 项），关闭即从所有界面消失 |
+> | 自更新目标 | npm `dsh-session-manager` | npm `dsh-session-ultra`（上游版本永远不会覆盖本分支） |
+>
+> 数据目录（`$DSH_HOME/dsh-session-manager/`，标注与工作区归档状态）与偏好键与上游**共享**，从上游切换零丢失、可随时回滚。
 
 ## 0 简介
 
-DSH 会话与工作区管理——工作区：归档与显示。会话：跨工作区移动、预设迁移、删除；收藏、待回看、优先级、标签、备注。批量操作。
+DSH 会话与工作区管理——工作区：归档与显示。会话：跨工作区移动、预设迁移、删除；收藏、待回看、优先级、标签、备注。批量操作。**在本分支里，以上每一项都可以在插件设置里单独启用 / 停用。**
 
 已在官方 DSH Desktop 客户端完成实际测试，当前验证范围见「5 兼容性」；两种环境共用本插件的 Host 与客户端功能，具体安装方式见下文。
 
@@ -43,6 +48,7 @@ DSH 会话与工作区管理——工作区：归档与显示。会话：跨工�
 
 ### 1.4 插件更新与设置卡片
 
+- **功能开关（本分支新增）**：设置卡片「功能开关」区域提供 12 个功能开关（归档 / 标签 / 备注 / 收藏 / 稍后回看 / 优先级 / 移动至工作区 / 迁移预设 / 删除会话 / 复制会话 ID / 批量处理 / 工作区管理）与一个「对话标题栏入口」总开关（默认关闭）。关闭的功能从所有界面消失：面板行按钮、批量操作、对话框字段、菜单项全部联动。「侧边栏 ⋯ 菜单项」区域可再逐项选择哪些功能进入原生会话行的 ⋯ 菜单。设置即时生效并持久化，一键「恢复默认」。
 - **检查更新**：会话管理窗口顶部提供 **npm 图标按钮**（检查更新），点击可检查新版本并在有更新时展示小红点提示；点击弹出更新窗口，展示当前版本与最新版本，支持完全独立的一键自动更新，内置安装源保护、HMR 与非 HMR 环境自适应协调、更新状态持久化校验、失败自动回滚和重启/刷新提示。
 - **设置卡片**：注册在 DSH 设置的插件配置页（`settings.plugin.item`）。展示当前安装版本、最新版本状态、卡片内检查更新与更新按钮、自动检查偏好开关以及 GitHub 仓库链接。
 - **安装源选择**：在设置卡片中可随时切换安装源，可选 **npm 官方源**（`registry.npmjs.org`，默认）与 **中国大陆镜像源**（`registry.npmmirror.com`）；检查更新与版本下载将直接请求所选源。
@@ -62,9 +68,23 @@ DSH 会话与工作区管理——工作区：归档与显示。会话：跨工�
 
 ## 2 UI入口
 
-### 2.1 标题栏入口
+### 2.1 标题栏入口（默认关闭）
 
-标题栏右侧对**当前会话**提供：**归档 / 移出归档**、**标签 / 备注**、**移动至工作区**、**删除会话**。
+**本分支默认不占用对话标题栏。** 需要时在设置卡片打开「对话标题栏入口」，才会在标题栏右侧对**当前会话**显示：**归档 / 移出归档**、**收藏**、**稍后回看**、**标签 / 备注**、**移动至工作区**（各自跟随功能开关）。**删除会话永远不做独立按钮**——即使开启标题栏入口，删除也只出现在 ⋯ 溢出菜单里，且整体排在最后。
+
+### 2.5 侧边栏 ⋯ 菜单（本分支新增）
+
+会话条目右侧的 **⋯** 菜单是 DSH 原生插槽（`sidebar.workspaces.session.menu.item`，官方自己的 置顶 / 重命名 / 分叉 / 归档 也走这里），本分支按 order 值嵌入下列动作，每项都可在设置卡片的「侧边栏 ⋯ 菜单项」里单独决定是否出现：
+
+| 菜单项 | order | 打开什么 |
+| --- | --- | --- |
+| 复制会话 ID | 150 | 直接写入剪贴板 |
+| 标签 / 备注 | 250 | 标记与备注编辑窗 |
+| 迁移预设 | 350 | 迁移 Agent 预设对话框 |
+| 移动至工作区 | 375 | 移动至工作区对话框 |
+| 删除会话（红色） | 500 | 二次确认框（含子智能体检查），刻意排最后 |
+
+菜单随指针离开自动收起，点击动作由常驻对话框宿主接力打开对应弹窗（与管理面板同一套对话框），锚定在菜单附近。
 
 ### 2.2 会话与工作区管理入口与界面
 
@@ -76,13 +96,15 @@ DSH 会话与工作区管理——工作区：归档与显示。会话：跨工�
 
 ### 2.4 设置卡片入口
 
-在 DSH 设置中进入插件设置页（会话管理），可查看版本信息、切换 npm 官方源或中国大陆镜像源、开启/关闭自动检查更新，或手动检查并更新。
+在 DSH 的 **插件** 页打开 `dsh-session-ultra` 的配置卡（或 DSH 设置的插件设置页），可：管理 **功能开关** 与 **侧边栏 ⋯ 菜单项**、查看版本信息、切换 npm 官方源或中国大陆镜像源、开启/关闭自动检查更新，或手动检查并更新。
 
 ## 3 安装
 
 ### 3.1 从插件安装
 
-在 DSH 的 **插件** 中添加插件，搜索 `dsh-session-manager` 并安装。该方式适用于官方 Web UI 和 Desktop 客户端。
+在 DSH 的 **插件** 中 **添加插件**，来源选 GitHub：`github:zf-666888/dsh-session-ultra`（或本地路径 / npm 若已发布）。装完**完全重启 DSH**——客户端代码是启动时快照的，只刷新页面不够。
+
+> 从上游 `dsh-session-manager` 迁移：先安装本插件并重启，确认功能正常后，在插件页停用 `dsh-session-manager`（与 `dsh-session-id-for-desktop`，若装过）。标注数据共享，无需迁移；回滚时反过来停用本插件、重启用上游即可。
 
 ### 3.2 从第三方插件市场安装
 
@@ -93,13 +115,13 @@ DSH 会话与工作区管理——工作区：归档与显示。会话：跨工�
 从 npm 安装：
 
 ```powershell
-dsh plugin --profile web add npm:dsh-session-manager
+dsh plugin --profile web add npm:dsh-session-ultra
 ```
 
 从 GitHub 安装：
 
 ```powershell
-dsh plugin --profile web add github:hkkz9522/dsh-session-manager
+dsh plugin --profile web add github:zf-666888/dsh-session-ultra
 ```
 
 安装后重启 DSH Web。若浏览器仍加载旧的客户端代码，可使用 `Ctrl+Shift+R` 强制刷新。
@@ -143,9 +165,10 @@ dsh plugin --profile web add <本仓库路径>
 
 > **版本验证说明**：自 0.6.3 起，本插件仅在官方 DSH Desktop 客户端上进行验证（Web UI 与本插件共用同一套 Host / 客户端代码，但不再纳入常规验证范围）。
 
-| DeepSeek Harness (DSH) | dsh-session-manager | 验证环境 |
+| DeepSeek Harness (DSH) | 插件版本 | 验证环境 |
 | :--- | :--- | :--- |
-| **v0.2.1-rc.2** | `0.7.3`, `0.7.2` | Desktop |
+| **v0.2.1-rc.2** | `dsh-session-ultra 0.8.0` | Desktop（含侧边栏 ⋯ 菜单、功能开关实测） |
+| **v0.2.1-rc.2** | `dsh-session-manager 0.7.3`, `0.7.2` | Desktop |
 | **v0.2.0-rc.2** | `0.7.1`, `0.7.0`, `0.6.4`, `0.6.3`, `0.6.2`, `0.5.4` | Desktop |
 | **v0.1.7-rc.2** | `0.5.3` | Desktop / Web UI |
 | **v0.1.7-rc.1** | `0.5.2` | Desktop / Web UI |

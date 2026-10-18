@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.8.0 — 2026-10-19 (dsh-session-ultra fork)
+
+Fork baseline: [hkkz9522/dsh-session-manager](https://github.com/hkkz9522/dsh-session-manager) v0.7.3 (MIT), rebranded to `dsh-session-ultra` (identity only: package/plugin id, `/session-manager-ultra/api` prefix, self-update target; data dir and preference keys deliberately shared for lossless switching).
+
+- **feat(settings)**: Per-feature toggle store (12 features: archive / tags / notes / favorite / review-later / priority / move / migrate-preset / delete / copy-id / batch / workspace-management) + a title-bar master switch + per-item row-menu membership, persisted to localStorage with corrupt-blob normalization. Settings card gains 功能开关 and 侧边栏 ⋯ 菜单项 sections with a one-click 恢复默认.
+- **feat(ui)**: The conversation title bar stays untouched by default — the whole header cluster is opt-in, and the standalone red 删除会话 button is gone for good; delete lives only in the ⋯ overflow menu, always last, behind its feature toggle.
+- **feat(menu)**: Native sidebar session-row ⋯ menu integration via the official `sidebar.workspaces.session.menu.item` slot: 复制会话 ID (150) / 标签·备注 (250) / 迁移预设 (350) / 移动至工作区 (375) / 删除会话 (500), each individually switchable. Dialogs are hosted by a persistent `shell.overlay` component (the row menu unmounts on pointer-leave) using the same dialogs as the manager panel.
+- **feat(gating)**: Feature toggles propagate everywhere — panel row buttons, the 12 bulk actions, mark filter chips, the batch toolbar group, the workspace tab and the annotation dialog fields (including the AI-import block) all hide when their feature is off.
+- **test**: 588 tests passing (19 new: feature-store semantics incl. corrupt-blob safety, row-menu gating/handoff/dialog routing, settings-card sections; header tests updated to the opt-in + no-standalone-delete invariants).
+
 ## 0.7.3 — 2026-10-18
 
 - **fix(update)**: Fix built-in one-click update and resolve `cannot get property "remote" without inject` by routing update requests through the plugin's own Host API instead of client-side `remote.pluginManager`.
