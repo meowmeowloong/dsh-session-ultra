@@ -366,7 +366,7 @@ test("dialog opacity css: no hard-coded white/dark background locks or blur/opac
 test("dialog opacity css: the injected stylesheet really carries the fill rules", () => {
   const harness = mountClient();
   const injected = harness.styleTags
-    .filter(tag => tag.dataset?.pluginCss === "dsh-session-manager/session-manager")
+    .filter(tag => tag.dataset?.pluginCss === "dsh-session-ultra/session-manager")
     .map(tag => String(tag.textContent || ""))
     .join("\n");
 

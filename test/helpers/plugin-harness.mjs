@@ -18,7 +18,7 @@ export function mountPlugin(context) {
     async request(path, body, method = "POST", raw) {
       const req = Readable.from([raw ?? JSON.stringify(body ?? {})]);
       req.method = method;
-      req.url = "/session-manager/api" + path;
+      req.url = "/session-manager-ultra/api" + path;
       let status;
       let data;
       await handler(req, { writeHead(code) { status = code; }, end(text) { data = JSON.parse(text); } });

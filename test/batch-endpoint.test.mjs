@@ -1,5 +1,5 @@
 /**
- * Coverage for the /session-manager/api/batch endpoint.
+ * Coverage for the /session-manager-ultra/api/batch endpoint.
  *
  * The batch route dispatches one HTTP request across N session ids, reusing
  * the same per-id helpers the single-action endpoints use, with per-item
@@ -291,7 +291,7 @@ test("/batch: plugin emits a build marker on apply() so DSH operators can confir
   f.ctx.logger = { info: m => messages.push(m), warn: m => messages.push(m) };
   f.mount();
   assert.ok(
-    messages.some(m => /dsh-session-manager v0\.7\.3/.test(m)),
+    messages.some(m => /dsh-session-ultra v0\.8\.0/.test(m)),
     "expected build marker in logger output, got: " + JSON.stringify(messages)
   );
 });

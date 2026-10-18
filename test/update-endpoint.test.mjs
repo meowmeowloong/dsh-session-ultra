@@ -11,7 +11,7 @@ function baseContext(overrides = {}) {
   if (hasPm) {
     if (overrides.pluginManager) {
       pm = {
-        listBundles: async () => [{ name: "dsh-session-manager", source: "^0.7.3" }],
+        listBundles: async () => [{ name: "dsh-session-ultra", source: "^0.8.0" }],
         ...overrides.pluginManager,
       };
     } else {
@@ -19,7 +19,7 @@ function baseContext(overrides = {}) {
     }
   } else {
     pm = {
-      listBundles: async () => [{ name: "dsh-session-manager", source: "^0.7.3" }],
+      listBundles: async () => [{ name: "dsh-session-ultra", source: "^0.8.0" }],
     };
   }
 
@@ -41,11 +41,11 @@ function baseContext(overrides = {}) {
   };
 }
 
-function createMockProfileDir(version = "0.7.3") {
+function createMockProfileDir(version = "0.8.0") {
   const dir = join(tmpdir(), "sm-mock-profile-" + Date.now() + "-" + Math.random().toString(36).slice(2));
-  const pkgDir = join(dir, "node_modules", "dsh-session-manager");
+  const pkgDir = join(dir, "node_modules", "dsh-session-ultra");
   mkdirSync(join(pkgDir, "lib"), { recursive: true });
-  writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-manager", version }, null, 2), "utf8");
+  writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-ultra", version }, null, 2), "utf8");
   writeFileSync(join(pkgDir, "lib", "index.js"), "// mock server entry", "utf8");
   writeFileSync(join(pkgDir, "lib", "client.js"), "// mock client entry", "utf8");
   return {
@@ -55,7 +55,7 @@ function createMockProfileDir(version = "0.7.3") {
       try { rmSync(dir, { recursive: true, force: true }); } catch (_) {}
     },
     setVersion(v) {
-      writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-manager", version: v }, null, 2), "utf8");
+      writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-ultra", version: v }, null, 2), "utf8");
     }
   };
 }
@@ -123,9 +123,9 @@ test("POST /update/install: calls pluginManager.installBundle when available", a
 
     assert.equal(res.status, 200);
     assert.equal(res.data.ok, true);
-    assert.equal(requestedSpec, "dsh-session-manager@1.5.0");
+    assert.equal(requestedSpec, "dsh-session-ultra@1.5.0");
     assert.equal(res.data.result.application, "restart-required");
-    assert.equal(res.data.result.spec, "dsh-session-manager@1.5.0");
+    assert.equal(res.data.result.spec, "dsh-session-ultra@1.5.0");
   } finally {
     mockProfile.cleanup();
   }
@@ -192,7 +192,7 @@ test("GET /update/check: uses custom registry query parameter when provided", as
 
     assert.equal(res.status, 200);
     assert.equal(res.data.ok, true);
-    assert.ok(fetchedUrl.startsWith("https://registry.npmmirror.com/dsh-session-manager/latest"));
+    assert.ok(fetchedUrl.startsWith("https://registry.npmmirror.com/dsh-session-ultra/latest"));
     assert.equal(res.data.result.latestVersion, "2.0.0");
     assert.equal(res.data.result.hasUpdate, true);
   } finally {
@@ -292,8 +292,8 @@ test("POST /update/install: in HMR mode, calls removeBundle then installBundle",
     assert.equal(res.data.ok, true);
     assert.equal(res.data.result.application, "applied");
     assert.deepEqual(calls, [
-      ["remove", "dsh-session-manager"],
-      ["install", "dsh-session-manager@2.0.0"]
+      ["remove", "dsh-session-ultra"],
+      ["install", "dsh-session-ultra@2.0.0"]
     ]);
   } finally {
     mockProfile.cleanup();
@@ -316,8 +316,8 @@ test("POST /update/install: in HMR mode, rolls back to old version when installB
         if (spec.includes("2.0.0")) {
           throw new Error("Tarball checksum mismatch");
         }
-        mockProfile.setVersion("0.7.3");
-        return { application: "applied", version: "0.7.3" };
+        mockProfile.setVersion("0.8.0");
+        return { application: "applied", version: "0.8.0" };
       }
     };
     const host = mountPlugin(baseContext({ pluginManager: pm }));
@@ -330,9 +330,9 @@ test("POST /update/install: in HMR mode, rolls back to old version when installB
     assert.ok(res.data.error.includes("Tarball checksum mismatch"));
     assert.ok(res.data.error.includes("已自动恢复旧版本"));
     assert.deepEqual(calls, [
-      ["remove", "dsh-session-manager"],
-      ["install", "dsh-session-manager@2.0.0"],
-      ["install", "dsh-session-manager@0.7.3"]
+      ["remove", "dsh-session-ultra"],
+      ["install", "dsh-session-ultra@2.0.0"],
+      ["install", "dsh-session-ultra@0.8.0"]
     ]);
   } finally {
     mockProfile.cleanup();
@@ -353,13 +353,13 @@ test("POST /update/install: rejects equal or lower version with 400 not-upgrade"
   const pm = { installBundle: async () => ({ application: "applied" }) };
   const host = mountPlugin(baseContext({ pluginManager: pm }));
 
-  // v0.7.2 is lower than current v0.7.3
+  // v0.7.2 is lower than current v0.8.0
   const res = await host.request("/update/install", { version: "0.7.2" }, "POST");
   assert.equal(res.status, 400);
   assert.equal(res.data.code, "not-upgrade");
 
-  // v0.7.3 is equal to current v0.7.3
-  const resEqual = await host.request("/update/install", { version: "0.7.3" }, "POST");
+  // v0.8.0 is equal to current v0.8.0
+  const resEqual = await host.request("/update/install", { version: "0.8.0" }, "POST");
   assert.equal(resEqual.status, 400);
   assert.equal(resEqual.data.code, "not-upgrade");
 });
@@ -502,7 +502,7 @@ test("POST /update/install: non-HMR mode installs directly without calling remov
     assert.equal(res.status, 200);
     assert.equal(res.data.ok, true);
     assert.equal(removeCalled, false, "removeBundle must not be called in non-HMR mode");
-    assert.equal(installedSpec, "dsh-session-manager@2.0.0");
+    assert.equal(installedSpec, "dsh-session-ultra@2.0.0");
     assert.equal(res.data.result.application, "restart-required");
   } finally {
     mockProfile.cleanup();
@@ -517,7 +517,7 @@ test("POST /update/install: failure in HMR triggers rollback; when rollback fail
       if (spec.includes("2.0.0")) {
         throw new Error("Corrupt download");
       }
-      if (spec.includes("0.7.3")) {
+      if (spec.includes("0.8.0")) {
         throw new Error("Registry offline during rollback");
       }
       return { application: "applied" };
@@ -538,7 +538,7 @@ test("POST /update/install: failure in HMR triggers rollback; when rollback fail
 test("POST /update/install: post-install disk verification failure triggers rollback in HMR (P1-2)", async () => {
   const testDir = join(tmpdir(), "sm-update-verify-test-" + Date.now());
   mkdirSync(testDir, { recursive: true });
-  const pkgDir = join(testDir, "node_modules", "dsh-session-manager");
+  const pkgDir = join(testDir, "node_modules", "dsh-session-ultra");
   mkdirSync(pkgDir, { recursive: true });
 
   try {
@@ -550,13 +550,13 @@ test("POST /update/install: post-install disk verification failure triggers roll
       installBundle: async (spec) => {
         if (spec.includes("2.0.0")) {
           // Simulate bad installation: package.json has wrong version and missing entry files
-          writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-manager", version: "1.9.9" }));
+          writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-ultra", version: "1.9.9" }));
           return { application: "applied" };
         }
-        if (spec.includes("0.7.3")) {
+        if (spec.includes("0.8.0")) {
           rolledBackSpec = spec;
           // Restore old version correctly
-          writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-manager", version: "0.7.3" }));
+          writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-ultra", version: "0.8.0" }));
           mkdirSync(join(pkgDir, "lib"), { recursive: true });
           writeFileSync(join(pkgDir, "lib", "index.js"), "// ok");
           writeFileSync(join(pkgDir, "lib", "client.js"), "// ok");
@@ -572,7 +572,7 @@ test("POST /update/install: post-install disk verification failure triggers roll
     assert.equal(res.status, 500);
     assert.equal(res.data.ok, false);
     assert.equal(res.data.rolledBack, true);
-    assert.equal(rolledBackSpec, "dsh-session-manager@0.7.3");
+    assert.equal(rolledBackSpec, "dsh-session-ultra@0.8.0");
     assert.ok(res.data.error.includes("校验失败") || res.data.error.includes("不匹配"));
   } finally {
     try { rmSync(testDir, { recursive: true, force: true }); } catch (_) {}
@@ -621,9 +621,9 @@ test("GET /update/status: returns matching task or superseded for taskId (P1-3)"
   mkdirSync(testDir, { recursive: true });
 
   try {
-    const pkgDir = join(testDir, "node_modules", "dsh-session-manager");
+    const pkgDir = join(testDir, "node_modules", "dsh-session-ultra");
     mkdirSync(join(pkgDir, "lib"), { recursive: true });
-    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-manager", version: "2.0.0" }));
+    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "dsh-session-ultra", version: "2.0.0" }));
     writeFileSync(join(pkgDir, "lib", "index.js"), "// ok");
     writeFileSync(join(pkgDir, "lib", "client.js"), "// ok");
 
@@ -654,7 +654,7 @@ test("GET /update/status: returns matching task or superseded for taskId (P1-3)"
 
 test("GET /update/check and POST /update/install: installation and unknown sources are rejected (P1-4)", async () => {
   const pmInst = {
-    listBundles: async () => [{ name: "dsh-session-manager", availability: "installation" }],
+    listBundles: async () => [{ name: "dsh-session-ultra", availability: "installation" }],
     installBundle: async () => ({ application: "applied" }),
   };
   const hostInst = mountPlugin(baseContext({ pluginManager: pmInst }));
@@ -712,11 +712,11 @@ test("POST /update/install: in HMR mode, removes faulty new version before insta
           mockProfile.setVersion("2.0.0");
           return { application: "applied", version: "2.0.0" };
         }
-        if (spec.includes("0.7.3")) {
+        if (spec.includes("0.8.0")) {
           // Restoring old version
-          mockProfile.setVersion("0.7.3");
+          mockProfile.setVersion("0.8.0");
           writeFileSync(join(mockProfile.pkgDir, "lib", "client.js"), "// restored");
-          return { application: "applied", version: "0.7.3" };
+          return { application: "applied", version: "0.8.0" };
         }
         return { application: "applied" };
       }
@@ -732,15 +732,15 @@ test("POST /update/install: in HMR mode, removes faulty new version before insta
     assert.ok(res.data.error.includes("已自动恢复旧版本"));
 
     // Check strict sequence:
-    // 1. remove dsh-session-manager (initial HMR uninstall of old version)
-    // 2. install dsh-session-manager@2.0.0
-    // 3. remove dsh-session-manager (P0-2: cleanup of faulty new version)
-    // 4. install dsh-session-manager@0.7.3 (reinstall of old version)
+    // 1. remove dsh-session-ultra (initial HMR uninstall of old version)
+    // 2. install dsh-session-ultra@2.0.0
+    // 3. remove dsh-session-ultra (P0-2: cleanup of faulty new version)
+    // 4. install dsh-session-ultra@0.8.0 (reinstall of old version)
     assert.deepEqual(operations, [
-      { op: "remove", name: "dsh-session-manager" },
-      { op: "install", spec: "dsh-session-manager@2.0.0" },
-      { op: "remove", name: "dsh-session-manager" },
-      { op: "install", spec: "dsh-session-manager@0.7.3" }
+      { op: "remove", name: "dsh-session-ultra" },
+      { op: "install", spec: "dsh-session-ultra@2.0.0" },
+      { op: "remove", name: "dsh-session-ultra" },
+      { op: "install", spec: "dsh-session-ultra@0.8.0" }
     ]);
   } finally {
     mockProfile.cleanup();
@@ -814,7 +814,7 @@ test("POST /update/install: resolves latest concrete version and validates again
 
     assert.equal(res.status, 200);
     assert.equal(res.data.ok, true);
-    assert.equal(installedSpec, "dsh-session-manager@3.2.1");
+    assert.equal(installedSpec, "dsh-session-ultra@3.2.1");
     assert.equal(res.data.result.version, "3.2.1");
   } finally {
     globalThis.fetch = origFetch;
@@ -845,7 +845,7 @@ test("POST /update/install: active task running over 4 minutes does NOT allow a 
     await new Promise(r => setTimeout(r, 50));
 
     // Simulate task A running for > 4 minutes (e.g. 5 minutes) by artificially moving startedAt back
-    const statusPath = join(mockProfile.dir, ".dsh-session-manager-update.json");
+    const statusPath = join(mockProfile.dir, ".dsh-session-ultra-update.json");
     if (existsSync(statusPath)) {
       const data = JSON.parse(readFileSync(statusPath, "utf8"));
       data.startedAt = Date.now() - (5 * 60 * 1000); // 5 minutes ago
@@ -861,7 +861,7 @@ test("POST /update/install: active task running over 4 minutes does NOT allow a 
     const resA = await reqA;
     assert.equal(resA.status, 200);
   } finally {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
     mockProfile.cleanup();
   }
 });
@@ -869,9 +869,9 @@ test("POST /update/install: active task running over 4 minutes does NOT allow a 
 test("POST /update/install: allows starting new task if previous disk task was left by a dead DSH process", async () => {
   const mockProfile = createMockProfileDir();
   try {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
     // Write an abandoned update status file pointing to a non-existent PID
-    const statusPath = join(mockProfile.dir, ".dsh-session-manager-update.json");
+    const statusPath = join(mockProfile.dir, ".dsh-session-ultra-update.json");
     writeFileSync(statusPath, JSON.stringify({
       taskId: "abandoned-task-9999",
       status: "updating",
@@ -894,7 +894,7 @@ test("POST /update/install: allows starting new task if previous disk task was l
     assert.equal(res.status, 200);
     assert.equal(res.data.ok, true);
   } finally {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
     mockProfile.cleanup();
   }
 });
@@ -911,7 +911,7 @@ test("POST /update/install: already installed version pending restart returns 20
     };
 
     const host = mountPlugin(baseContext({ pluginManager: pm }));
-    // Requesting target version 2.0.0 when disk already has 2.0.0 installed (> running 0.7.3)
+    // Requesting target version 2.0.0 when disk already has 2.0.0 installed (> running 0.8.0)
     const res = await host.request("/update/install", { version: "2.0.0" }, "POST");
 
     assert.equal(res.status, 200);
@@ -922,7 +922,7 @@ test("POST /update/install: already installed version pending restart returns 20
     assert.equal(removeCalled, false, "Must not invoke removeBundle for already installed version");
     assert.equal(installCalled, false, "Must not invoke installBundle for already installed version");
   } finally {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
     mockProfile.cleanup();
   }
 });
@@ -936,13 +936,13 @@ test("POST /update/install: target version lower than installed version rejected
     };
 
     const host = mountPlugin(baseContext({ pluginManager: pm }));
-    const res = await host.request("/update/install", { version: "0.7.3" }, "POST");
+    const res = await host.request("/update/install", { version: "0.8.0" }, "POST");
 
     assert.equal(res.status, 400);
     assert.equal(res.data.code, "not-upgrade");
     assert.ok(res.data.error.includes("低于当前已安装版本"));
   } finally {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
     mockProfile.cleanup();
   }
 });
@@ -970,7 +970,7 @@ test("GET /update/check and POST /update/install: untrusted registry is rejected
     assert.equal(installRes.status, 400);
     assert.equal(installRes.data.code, "untrusted-registry");
   } finally {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
     mockProfile.cleanup();
   }
 });
@@ -978,8 +978,8 @@ test("GET /update/check and POST /update/install: untrusted registry is rejected
 test("POST /update/install: stalled heartbeat (> 3 min) from external process allows new task", async () => {
   const mockProfile = createMockProfileDir();
   try {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
-    const statusPath = join(mockProfile.dir, ".dsh-session-manager-update.json");
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
+    const statusPath = join(mockProfile.dir, ".dsh-session-ultra-update.json");
     writeFileSync(statusPath, JSON.stringify({
       taskId: "stalled-task-1234",
       status: "installing",
@@ -1003,7 +1003,7 @@ test("POST /update/install: stalled heartbeat (> 3 min) from external process al
     assert.equal(res.status, 200);
     assert.equal(res.data.ok, true);
   } finally {
-    delete globalThis[Symbol.for("dsh-session-manager.activeUpdateTask")];
+    delete globalThis[Symbol.for("dsh-session-ultra.activeUpdateTask")];
     mockProfile.cleanup();
   }
 });

@@ -307,9 +307,9 @@ export function mountClient({ sessions = [], current = "", archivedIds = [], wor
     set __DSH_SM_TEST_UPDATE__(v) { globalThis.__DSH_SM_TEST_UPDATE__ = v; },
     fetch: async (url, options) => {
       requests.push({ url, options }); let data;
-      if (url === "/session-manager/api/workspaces") data = response ? await response(options) : { ok: true, result: { workspaces: workspaceData, sessionCreatedAt } };
-      else if (url === "/session-manager/api/annotations" && options?.method !== "POST") data = annotationFetch ? await annotationFetch() : { ok: true, result: { annotations: structuredClone(annotationData) } };
-      else if (url === "/session-manager/api/annotations") {
+      if (url === "/session-manager-ultra/api/workspaces") data = response ? await response(options) : { ok: true, result: { workspaces: workspaceData, sessionCreatedAt } };
+      else if (url === "/session-manager-ultra/api/annotations" && options?.method !== "POST") data = annotationFetch ? await annotationFetch() : { ok: true, result: { annotations: structuredClone(annotationData) } };
+      else if (url === "/session-manager-ultra/api/annotations") {
         const body = JSON.parse(options.body);
         if (annotationSave) data = await annotationSave(body);
         else {
@@ -323,19 +323,19 @@ export function mountClient({ sessions = [], current = "", archivedIds = [], wor
             } catch (error) { data = { ok: false, code: error.code, error: error.message }; }
           }
         }
-      } else if (typeof url === "string" && url.startsWith("/session-manager/api/update/check")) {
+      } else if (typeof url === "string" && url.startsWith("/session-manager-ultra/api/update/check")) {
         data = fetchUpdateCheck ? await fetchUpdateCheck(options, url) : { ok: true, result: { currentVersion: "1.0.0", latestVersion: "1.0.0", hasUpdate: false } };
-      } else if (url === "/session-manager/api/update/install") {
+      } else if (url === "/session-manager-ultra/api/update/install") {
         const body = options?.body ? JSON.parse(options.body) : {};
-        data = fetchUpdateInstall ? await fetchUpdateInstall(body) : { ok: true, result: { application: "restart-required", spec: "dsh-session-manager@" + (body.version || "latest") } };
+        data = fetchUpdateInstall ? await fetchUpdateInstall(body) : { ok: true, result: { application: "restart-required", spec: "dsh-session-ultra@" + (body.version || "latest") } };
       } else if (typeof url === "string" && (url.startsWith("https://registry.npmjs.org/") || url.startsWith("https://registry.npmmirror.com/"))) {
         data = fetchNpmLatest ? await fetchNpmLatest() : { version: "1.0.0" };
-      } else if (url === "/session-manager/api/delete") {
+      } else if (url === "/session-manager-ultra/api/delete") {
         const body = options?.body ? JSON.parse(options.body) : {};
         data = { ok: true, result: { sessionId: body.sessionId, deleted: true } };
-      } else if (typeof url === "string" && url.startsWith("/session-manager/api/delete-preview")) {
+      } else if (typeof url === "string" && url.startsWith("/session-manager-ultra/api/delete-preview")) {
         data = fetchDeletePreview ? await fetchDeletePreview(options, url) : { ok: true, result: { subagentCount: 0 } };
-      } else if (typeof url === "string" && url.startsWith("/session-manager/api/preset-scan")) {
+      } else if (typeof url === "string" && url.startsWith("/session-manager-ultra/api/preset-scan")) {
         data = fetchPresetScan ? await fetchPresetScan(options, url) : {
           ok: true,
           result: {
@@ -343,19 +343,19 @@ export function mountClient({ sessions = [], current = "", archivedIds = [], wor
             availablePresets: ["PresetA", "PresetB", "PresetC"]
           }
         };
-      } else if (url === "/session-manager/api/workspace-archive") {
+      } else if (url === "/session-manager-ultra/api/workspace-archive") {
         const body = options?.body ? JSON.parse(options.body) : {};
         data = { ok: true, result: body };
-      } else if (url === "/session-manager/api/workspace-unarchive") {
+      } else if (url === "/session-manager-ultra/api/workspace-unarchive") {
         const body = options?.body ? JSON.parse(options.body) : {};
         data = { ok: true, result: { unarchived: true, workspaceId: body.workspaceId } };
-      } else if (url === "/session-manager/api/workspace-archives") {
+      } else if (url === "/session-manager-ultra/api/workspace-archives") {
         data = { ok: true, result: { archives: {} } };
-      } else if (url === "/session-manager/api/batch") {
+      } else if (url === "/session-manager-ultra/api/batch") {
         const body = options?.body ? JSON.parse(options.body) : {};
         const items = (body.sessionIds || []).map(id => ({ sessionId: id, status: "success" }));
         data = { ok: true, result: { summary: { total: items.length, success: items.length, failed: 0, skipped: 0 }, items, aborted: false } };
-      } else if (typeof url === "string" && url.startsWith("/session-manager/api/update/status")) {
+      } else if (typeof url === "string" && url.startsWith("/session-manager-ultra/api/update/status")) {
         data = fetchUpdateStatus ? await fetchUpdateStatus(options, url) : { ok: true, result: { status: "idle", currentVersion: "1.0.0" } };
       } else throw new Error("Unexpected request: " + url);
       return { ok: true, status: 200, json: async () => data };

@@ -235,7 +235,7 @@ test("updateStore.startUpdate: calls /update/install directly without dsh-market
       passedBody = body;
       return {
         ok: true,
-        result: { application: "restart-required", spec: "dsh-session-manager@1.5.0", version: "1.5.0" }
+        result: { application: "restart-required", spec: "dsh-session-ultra@1.5.0", version: "1.5.0" }
       };
     }
   });
@@ -300,7 +300,7 @@ test("updateStore.startUpdate: reports rollback details on installation failure"
       return {
         ok: false,
         code: "install-failed",
-        error: "安装更新失败: 网络超时 （已自动恢复旧版本 v0.7.3）",
+        error: "安装更新失败: 网络超时 （已自动恢复旧版本 v0.8.0）",
         rolledBack: true
       };
     }
@@ -412,7 +412,7 @@ test("UpdateDialog: renders clear rollback notification with title, restored ver
   updateStore.state.dialogOpen = true;
   updateStore.state.rollbackInfo = {
     rolledBack: true,
-    currentVersion: "0.7.3",
+    currentVersion: "0.8.0",
     reason: "校验包失败：Unexpected token"
   };
 
@@ -421,7 +421,7 @@ test("UpdateDialog: renders clear rollback notification with title, restored ver
   assert.equal(text(title), harness.t("update.rolledBack.title"));
 
   const dialogText = text(host.tree);
-  assert.ok(dialogText.includes("0.7.3"), "Should mention restored version 0.7.3");
+  assert.ok(dialogText.includes("0.8.0"), "Should mention restored version 0.8.0");
   assert.ok(dialogText.includes("校验包失败：Unexpected token"), "Should mention rollback reason");
 
   host.dispose();
@@ -434,7 +434,7 @@ test("UpdateDialog: renders success notification with restart requirement", () =
 
   updateStore.state.status = "done";
   updateStore.state.application = "restart-required";
-  updateStore.state.currentVersion = "0.7.3";
+  updateStore.state.currentVersion = "0.8.0";
   updateStore.state.latestVersion = "0.7.4";
   updateStore.state.dialogOpen = true;
 
@@ -455,7 +455,7 @@ test("updateStore.checkRecentStatus: retrieves and displays rolled-back task on 
         taskId: "task-roll-123",
         status: "rolled-back",
         targetVersion: "0.7.4-test.1",
-        currentVersion: "0.7.3",
+        currentVersion: "0.8.0",
         rolledBack: true,
         error: "pnpm fetch 404",
         failedAt: Date.now() - 5000
@@ -469,7 +469,7 @@ test("updateStore.checkRecentStatus: retrieves and displays rolled-back task on 
   assert.equal(updateStore.state.status, "error");
   assert.equal(updateStore.state.dialogOpen, true);
   assert.ok(updateStore.state.rollbackInfo);
-  assert.equal(updateStore.state.rollbackInfo.currentVersion, "0.7.3");
+  assert.equal(updateStore.state.rollbackInfo.currentVersion, "0.8.0");
   assert.ok(updateStore.state.rollbackInfo.reason.includes("pnpm fetch 404"));
 
   harness.dispose();
@@ -586,7 +586,7 @@ test("updateStore.startUpdate: concurrent update from Page B adopts active task 
       ok: true,
       result: {
         application: "restart-required",
-        spec: "dsh-session-manager@" + serverActiveTask.version,
+        spec: "dsh-session-ultra@" + serverActiveTask.version,
         version: serverActiveTask.version,
         taskId: serverActiveTask.taskId
       }
@@ -603,7 +603,7 @@ test("updateStore.startUpdate: concurrent update from Page B adopts active task 
           taskId: serverActiveTask.taskId,
           status: "installing",
           targetVersion: serverActiveTask.version,
-          currentVersion: "0.7.3"
+          currentVersion: "0.8.0"
         }
       };
     }
@@ -613,7 +613,7 @@ test("updateStore.startUpdate: concurrent update from Page B adopts active task 
         taskId: serverActiveTask.taskId,
         status: "completed",
         targetVersion: serverActiveTask.version,
-        currentVersion: "0.7.3",
+        currentVersion: "0.8.0",
         application: "restart-required"
       }
     };
@@ -644,20 +644,20 @@ test("updateStore.startUpdate: concurrent update from Page B adopts active task 
   // Both pages must show successful completion
   assert.equal(storeA.state.status, "done");
   assert.equal(storeA.state.installedVersion, "2.0.0");
-  assert.equal(storeA.state.runningVersion, "0.7.3");
+  assert.equal(storeA.state.runningVersion, "0.8.0");
 
   assert.equal(storeB.state.status, "done");
   assert.equal(storeB.state.installedVersion, "2.0.0");
-  assert.equal(storeB.state.runningVersion, "0.7.3");
+  assert.equal(storeB.state.runningVersion, "0.8.0");
   assert.equal(storeB.state.taskId, serverActiveTask.taskId, "Page B must have adopted Page A taskId");
   assert.ok(pollCount >= 1, "Page B must have executed status polling loop");
 
   // Verify UI in Page B renders restart message
   const hostB = harnessB.mountComponent(DialogB, { t: harnessB.t });
   const dialogTextB = text(hostB.tree);
-  assert.ok(dialogTextB.includes("v0.7.3"), "Page B must show running version");
+  assert.ok(dialogTextB.includes("v0.8.0"), "Page B must show running version");
   assert.ok(dialogTextB.includes("v2.0.0"), "Page B must show installed version");
-  assert.ok(dialogTextB.includes(harnessB.t("update.done.restart", { from: "0.7.3", to: "2.0.0" })), "Page B must show restart notice");
+  assert.ok(dialogTextB.includes(harnessB.t("update.done.restart", { from: "0.8.0", to: "2.0.0" })), "Page B must show restart notice");
 
   hostB.dispose();
   harnessA.dispose();
@@ -680,7 +680,7 @@ test("updateStore.startUpdate: Page B adopting active task correctly displays ro
         taskId: serverActiveTask.taskId,
         status: "rolled-back",
         targetVersion: "2.0.0",
-        currentVersion: "0.7.3",
+        currentVersion: "0.8.0",
         error: "安装包校验失败"
       }
     })
@@ -782,7 +782,7 @@ test("updateStore.startUpdate: business failure containing '404' immediately rep
         ok: true,
         result: {
           status: "failed",
-          error: "npm ERR! 404 Not Found - GET https://registry.npmjs.org/dsh-session-manager/-/dsh-session-manager-9.9.9.tgz"
+          error: "npm ERR! 404 Not Found - GET https://registry.npmjs.org/dsh-session-ultra/-/dsh-session-ultra-9.9.9.tgz"
         }
       };
     }
@@ -853,7 +853,7 @@ test("updateStore.startUpdate: rollback containing 'fetch' immediately displays 
         ok: true,
         result: {
           status: "rolled-back",
-          currentVersion: "0.7.3",
+          currentVersion: "0.8.0",
           targetVersion: "2.0.0",
           error: "npm ERR! fetch failed: https://registry.npmjs.org/package.tgz"
         }
@@ -871,7 +871,7 @@ test("updateStore.startUpdate: rollback containing 'fetch' immediately displays 
   assert.equal(res.rolledBack, true);
   assert.equal(updateStore.state.status, "error");
   assert.equal(updateStore.state.rollbackInfo.rolledBack, true);
-  assert.equal(updateStore.state.rollbackInfo.currentVersion, "0.7.3");
+  assert.equal(updateStore.state.rollbackInfo.currentVersion, "0.8.0");
   assert.ok(updateStore.state.rollbackInfo.reason.includes("fetch failed"));
   assert.equal(polls, 1);
 
@@ -898,7 +898,7 @@ test("updateStore.startUpdate: recovery-required displays failure and manual rec
           status: "recovery-required",
           error: "checksum mismatch 404",
           rollbackError: "EPERM file locked",
-          currentVersion: "0.7.3"
+          currentVersion: "0.8.0"
         }
       };
     }

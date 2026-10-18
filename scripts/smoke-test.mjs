@@ -6,10 +6,10 @@
  * RUNNING dsh web instance and exercises plugin endpoints with a
  * nonexistent session id — nothing real is touched:
  *
- *   POST /session-manager/api/delete    { sessionId: "smoke-test-nonexistent" }
- *   POST /session-manager/api/unarchive { sessionId: "smoke-test-nonexistent" }
- *   POST /session-manager/api/move      { sessionId: "smoke-test-nonexistent", targetWorkspaceId: "test" }
- *   GET  /session-manager/api/workspaces
+ *   POST /session-manager-ultra/api/delete    { sessionId: "smoke-test-nonexistent" }
+ *   POST /session-manager-ultra/api/unarchive { sessionId: "smoke-test-nonexistent" }
+ *   POST /session-manager-ultra/api/move      { sessionId: "smoke-test-nonexistent", targetWorkspaceId: "test" }
+ *   GET  /session-manager-ultra/api/workspaces
  *
  * delete / unarchive answer `{ ok: true }` for unknown ids (idempotent);
  * move answers `{ ok: false }` with a readable message (pre-flight refuses
@@ -19,7 +19,7 @@
  *         (baseUrl defaults to http://127.0.0.1:3080)
  */
 const BASE = process.argv[2] ?? "http://127.0.0.1:3080";
-const API = BASE + "/session-manager/api";
+const API = BASE + "/session-manager-ultra/api";
 const FAKE = "smoke-test-nonexistent";
 
 async function callPost(path, body) {

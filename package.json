@@ -1,7 +1,7 @@
 {
-  "name": "dsh-session-manager",
-  "version": "0.7.3",
-  "description": "DeepSeek Harness session and workspace manager —— Workspaces: archive and visibility. Sessions: move, migrate presets, delete, favorite, review later, prioritize, tag, and annotate. Batch operations. | DSH 会话与工作区管理——工作区：归档与显示。会话：跨工作区移动、预设迁移、删除；收藏、待回看、优先级、标签、备注。批量操作。",
+  "name": "dsh-session-ultra",
+  "version": "0.8.0",
+  "description": "Fork of dsh-session-manager for DeepSeek Harness — per-feature toggles, native sidebar ⋯ menu integration, no title-bar takeover. | dsh-session-manager 精简分支：功能可逐项开关、集成进原生侧边栏菜单、默认不占标题栏。",
   "license": "MIT",
   "keywords": [
     "dsh",
@@ -24,12 +24,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hkkz9522/dsh-session-manager.git"
+    "url": "git+https://github.com/zf-666888/dsh-session-ultra.git"
   },
   "bugs": {
-    "url": "https://github.com/hkkz9522/dsh-session-manager/issues"
+    "url": "https://github.com/zf-666888/dsh-session-ultra/issues"
   },
-  "homepage": "https://github.com/hkkz9522/dsh-session-manager",
+  "homepage": "https://github.com/zf-666888/dsh-session-ultra",
   "type": "module",
   "main": "./lib/index.js",
   "exports": {

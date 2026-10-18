@@ -4,6 +4,7 @@
  */
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
 import {
   createDshAdapter,
   normalizeSessionHeader,
@@ -124,9 +125,9 @@ test("getSessionEvents: returns [] when no events surface exists", () => {
   assert.deepEqual(a.getSessionEvents({ events: [1, 2] }), [1, 2]);
 });
 
-test("pluginVersion: reads dsh-session-manager package.json", () => {
+test("pluginVersion: reads dsh-session-ultra package.json", () => {
   const a = createDshAdapter(makeCtx());
-  assert.equal(a.pluginVersion(), "0.7.3");
+  assert.equal(a.pluginVersion(), JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version);
 });
 
 test("dshVersion: returns a string", () => {
@@ -176,31 +177,31 @@ test("Cordis context safety: detectPluginSource and resolveProfileDir do not thr
 test("detectPluginSource: inspects bundle list accurately", () => {
   const adapter = createDshAdapter(makeCtx());
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", availability: "installation" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", availability: "installation" }]),
     "installation"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "link:../dev-plugin" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "link:../dev-plugin" }]),
     "linked"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "file:C:/path/to/pkg" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "file:C:/path/to/pkg" }]),
     "linked"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "github:hkkz9522/dsh-session-manager" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "github:hkkz9522/dsh-session-ultra" }]),
     "github"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "registry:npm" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "registry:npm" }]),
     "npm"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "^0.7.3" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "^0.7.3" }]),
     "npm"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "custom-proto:something" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "custom-proto:something" }]),
     "unknown"
   );
 });
@@ -223,22 +224,22 @@ test("classifyInstallSource: correctly classifies npm specifications", () => {
   assert.equal(classifyInstallSource("registry:npm"), "npm");
 
   // DSH official dependencySpec() format: name@spec
-  assert.equal(classifyInstallSource("dsh-session-manager@0.7.3"), "npm");
-  assert.equal(classifyInstallSource("dsh-session-manager@^0.7.3"), "npm");
-  assert.equal(classifyInstallSource("dsh-session-manager@latest"), "npm");
-  assert.equal(classifyInstallSource("dsh-session-manager@0.7.4-test.1"), "npm");
-  assert.equal(classifyInstallSource("dsh-session-manager@npm:dsh-session-manager@^0.7.3"), "npm");
+  assert.equal(classifyInstallSource("dsh-session-ultra@0.7.3"), "npm");
+  assert.equal(classifyInstallSource("dsh-session-ultra@^0.7.3"), "npm");
+  assert.equal(classifyInstallSource("dsh-session-ultra@latest"), "npm");
+  assert.equal(classifyInstallSource("dsh-session-ultra@0.7.4-test.1"), "npm");
+  assert.equal(classifyInstallSource("dsh-session-ultra@npm:dsh-session-ultra@^0.7.3"), "npm");
 
   // Local links
-  assert.equal(classifyInstallSource("dsh-session-manager@link:../local-dir"), "linked");
+  assert.equal(classifyInstallSource("dsh-session-ultra@link:../local-dir"), "linked");
   assert.equal(classifyInstallSource("link:../dev-plugin"), "linked");
   assert.equal(classifyInstallSource("file:C:/path/to/pkg"), "linked");
   assert.equal(classifyInstallSource("./relative/path"), "linked");
 
   // Git / GitHub
-  assert.equal(classifyInstallSource("dsh-session-manager@github:hkkz9522/dsh-session-manager"), "github");
-  assert.equal(classifyInstallSource("github:hkkz9522/dsh-session-manager"), "github");
-  assert.equal(classifyInstallSource("git+https://github.com/hkkz9522/dsh-session-manager.git"), "github");
+  assert.equal(classifyInstallSource("dsh-session-ultra@github:hkkz9522/dsh-session-ultra"), "github");
+  assert.equal(classifyInstallSource("github:hkkz9522/dsh-session-ultra"), "github");
+  assert.equal(classifyInstallSource("git+https://github.com/hkkz9522/dsh-session-ultra.git"), "github");
 
   // Non-npm URLs and unknown protocols
   assert.equal(classifyInstallSource("https://example.com/tarball.tgz"), "unknown");
@@ -251,19 +252,19 @@ test("detectPluginSource: handles official DSH listBundles() sources correctly (
   const adapter = createDshAdapter(makeCtx());
   // DSH dependencySpec output
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "dsh-session-manager@0.7.3" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "dsh-session-ultra@0.7.3" }]),
     "npm"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "dsh-session-manager@^0.7.3" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "dsh-session-ultra@^0.7.3" }]),
     "npm"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "dsh-session-manager@latest" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "dsh-session-ultra@latest" }]),
     "npm"
   );
   assert.equal(
-    detectPluginSource(adapter, {}, [{ name: "dsh-session-manager", source: "dsh-session-manager@0.7.4-test.1" }]),
+    detectPluginSource(adapter, {}, [{ name: "dsh-session-ultra", source: "dsh-session-ultra@0.7.4-test.1" }]),
     "npm"
   );
 });

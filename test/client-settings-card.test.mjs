@@ -9,13 +9,13 @@ test("Settings Card: registered in settings.plugin.item slot with correct metada
 
   // Registered under id and key
   const slotById = reg.get("session-manager-settings");
-  const slotByKey = reg.get("dsh-session-manager");
+  const slotByKey = reg.get("dsh-session-ultra");
   assert.ok(slotById, "Slot must be registered by id 'session-manager-settings'");
-  assert.ok(slotByKey, "Slot must be registered by key 'dsh-session-manager'");
+  assert.ok(slotByKey, "Slot must be registered by key 'dsh-session-ultra'");
   assert.equal(slotById, slotByKey, "Both lookups should return the same registration");
 
   assert.equal(slotById.options.name, "settings.plugin.item");
-  assert.equal(slotById.options.key, "dsh-session-manager");
+  assert.equal(slotById.options.key, "dsh-session-ultra");
   assert.equal(slotById.options.id, "session-manager-settings");
   assert.equal(slotById.options.order, 50);
 
@@ -41,18 +41,18 @@ test("Settings Card: renders title, version badge, sections and GitHub repositor
 
   // GitHub link check
   const links = nodes(host.tree, n => n.type === "a");
-  const ghLink = links.find(a => a.props?.href === "https://github.com/hkkz9522/dsh-session-manager" && a.props?.className === "sm-settingsLink");
+  const ghLink = links.find(a => a.props?.href === "https://github.com/zf-666888/dsh-session-ultra" && a.props?.className === "sm-settingsLink");
   assert.ok(ghLink, "GitHub repository link must be present");
   assert.equal(ghLink.props.target, "_blank");
   assert.equal(ghLink.props.rel, "noopener noreferrer");
 
-  const starLink = links.find(a => a.props?.href === "https://github.com/hkkz9522/dsh-session-manager" && a.props?.className?.includes("sm-settingsBadgeLink"));
+  const starLink = links.find(a => a.props?.href === "https://github.com/zf-666888/dsh-session-ultra" && a.props?.className?.includes("sm-settingsBadgeLink"));
   assert.ok(starLink, "Star badge link must be present");
   assert.ok(text(starLink).includes(harness.t("settings.star")), "Star link must contain star label");
   assert.equal(starLink.props.title, undefined, "Star link must not use native title attribute");
   assert.equal(starLink.props["aria-label"], harness.t("settings.star.tip"), "Star link must have aria-label matching tip");
 
-  const issueLink = links.find(a => a.props?.href === "https://github.com/hkkz9522/dsh-session-manager/issues");
+  const issueLink = links.find(a => a.props?.href === "https://github.com/zf-666888/dsh-session-ultra/issues");
   assert.ok(issueLink, "Issues badge link must be present");
   assert.ok(text(issueLink).includes(harness.t("settings.feedback")), "Issue link must contain feedback label");
   assert.equal(issueLink.props.title, undefined, "Issue link must not use native title attribute");
@@ -256,10 +256,10 @@ test("Settings Card: registered in plugins.bundle.config slot for DSH desktop co
   const harness = mountClient();
   const reg = harness.registered;
 
-  const bundleConfig = reg.get("dsh-session-manager-bundle-config");
-  assert.ok(bundleConfig, "Slot must be registered under 'dsh-session-manager-bundle-config'");
+  const bundleConfig = reg.get("dsh-session-ultra-bundle-config");
+  assert.ok(bundleConfig, "Slot must be registered under 'dsh-session-ultra-bundle-config'");
   assert.equal(bundleConfig.options.name, "plugins.bundle.config");
-  assert.equal(bundleConfig.options.key, "dsh-session-manager");
+  assert.equal(bundleConfig.options.key, "dsh-session-ultra");
 
   // Summary view returns null
   const summaryEl = bundleConfig.component({ view: "summary" });

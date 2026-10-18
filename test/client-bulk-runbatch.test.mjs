@@ -3,7 +3,7 @@
  * with dsh-session-manager 0.5.2.
  *
  * runBatch is the SessionManagerPanel's only network layer to the
- * /session-manager/api/batch endpoint. We extract it from the
+ * /session-manager-ultra/api/batch endpoint. We extract it from the
  * runInNewContext sandbox used by mountClient so we can call it with a
  * stubbed fetch and exercise the happy / sad / abort paths without
  * needing to drive selectedIds from outside the panel.
@@ -22,13 +22,13 @@ function loadRunBatch({ fetchImpl, AbortControllerImpl = AbortController }) {
   // the context's `this` inside the snippet.
   const match = SRC.match(/async function runBatch\(args, onProgress\) \{[\s\S]*?[\r\n]+    \}[\r\n]+/);
   assert.ok(match, "runBatch must be exported as a top-level async function");
-  const sandbox = { fetch: fetchImpl, AbortController: AbortControllerImpl, API: "/session-manager/api", console: { warn() {}, error() {}, log() {} } };
+  const sandbox = { fetch: fetchImpl, AbortController: AbortControllerImpl, API: "/session-manager-ultra/api", console: { warn() {}, error() {}, log() {} } };
   runInNewContext(match[0] + "\nthis.runBatch = runBatch;", sandbox);
   if (typeof sandbox.runBatch !== "function") throw new Error("runBatch did not load");
   return sandbox.runBatch;
 }
 
-test("client runBatch: POSTs {action, sessionIds, payload} to /session-manager/api/batch", async () => {
+test("client runBatch: POSTs {action, sessionIds, payload} to /session-manager-ultra/api/batch", async () => {
   let captured;
   const fetchImpl = async (url, options) => {
     captured = { url, options };
@@ -36,7 +36,7 @@ test("client runBatch: POSTs {action, sessionIds, payload} to /session-manager/a
   };
   const runBatch = loadRunBatch({ fetchImpl });
   const result = await runBatch({ action: "favorite", sessionIds: ["a", "b"], payload: { value: true } });
-  assert.equal(captured.url, "/session-manager/api/batch", "must hit the /batch endpoint");
+  assert.equal(captured.url, "/session-manager-ultra/api/batch", "must hit the /batch endpoint");
   assert.equal(captured.options.method, "POST");
   const body = JSON.parse(captured.options.body);
   assert.deepEqual(body, { action: "favorite", sessionIds: ["a", "b"], payload: { value: true } });

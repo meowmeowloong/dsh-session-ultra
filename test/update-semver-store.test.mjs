@@ -192,7 +192,7 @@ test("updateStore.startUpdate: installs bundle and transitions to done", async (
         ok: true,
         result: {
           application: "restart-required",
-          spec: "dsh-session-manager@" + body.version
+          spec: "dsh-session-ultra@" + body.version
         }
       };
     }
@@ -349,7 +349,7 @@ test("updateStore.startUpdate: sends chosen registry in install payload", async 
       installPayload = body;
       return {
         ok: true,
-        result: { application: "restart-required", spec: "dsh-session-manager@1.2.0" }
+        result: { application: "restart-required", spec: "dsh-session-ultra@1.2.0" }
       };
     }
   });
